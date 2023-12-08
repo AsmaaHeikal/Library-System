@@ -124,10 +124,11 @@ int main() {
                 break;
             }
             case 5: {
-
+                deleteHandler("Book");
                 break;
             }
             case 6: {
+                deleteHandler("Author");
 
                 break;
             }
