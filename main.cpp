@@ -1,8 +1,4 @@
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <vector>
-
+#include<bits/stdc++.h>
 using namespace std;
 
 struct Author {
@@ -296,9 +292,9 @@ void updateBooksSI() {
     dataFile.seekg(2, ios::beg);
 
     //getting the length indicator of the record
-    char lengthIndicator[2];
-    dataFile.read(lengthIndicator, 2);
-    int recLen = stoi(lengthIndicator);
+    short lengthIndicator;
+    dataFile.read((char*)&lengthIndicator, 2);
+    int recLen = lengthIndicator;
 
 
     while (!dataFile.eof()) {
@@ -333,8 +329,8 @@ void updateBooksSI() {
 
 
         //getting the length indicator of the next record
-        dataFile.read(lengthIndicator, 2);
-        recLen = stoi(lengthIndicator);
+        dataFile.read((char*)&lengthIndicator, 2);
+        recLen = lengthIndicator;
 
     }
 
@@ -370,9 +366,9 @@ void updateAuthorsSI() {
     dataFile.seekg(2, ios::beg);
 
     //getting the length indicator of the record
-    char lengthIndicator[2];
-    dataFile.read(lengthIndicator, 2);
-    int recLen = stoi(lengthIndicator);
+    short lengthIndicator;
+    dataFile.read((char*)&lengthIndicator, 2);
+    int recLen = lengthIndicator;
 
 
     while (!dataFile.eof()) {
@@ -403,8 +399,8 @@ void updateAuthorsSI() {
 
         //getting the length indicator of the next record
         dataFile.seekg(recLen - 3 - authorName.length(), ios::cur);
-        dataFile.read(lengthIndicator, 2);
-        recLen = stoi(lengthIndicator);
+        dataFile.read((char*)&lengthIndicator, 2);
+        recLen = lengthIndicator;
 
     }
 
@@ -550,9 +546,9 @@ string search(int bitOffset, const string &file) {
     dataFile.seekg(bitOffset - 2, ios::beg);
 
     //getting the length indicator of the record
-    char lengthIndicator[2];
-    dataFile.read(lengthIndicator, 2);
-    int recLen = stoi(lengthIndicator);
+    short lengthIndicator;
+    dataFile.read((char*)&lengthIndicator, 2);
+    int recLen = lengthIndicator;
 
     string rec;
     for (int i = 0; i < recLen; i++) {
