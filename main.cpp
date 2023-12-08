@@ -49,7 +49,6 @@ void updateBookTitle();
 
 void writeQuery();
 
-
 short cntID = 0, CntNameLL = 0, CntNameSec = 0;
 
 int main() {
@@ -62,32 +61,6 @@ int main() {
     book.seekg(0, ios::beg);
     book.write((char*)&head, sizeof(head));
     book.close();
-//    Author data[] = {
-//            {"1", "AA1 A2", "222 Dokki St"},   // offset = 4
-//            {"2", "B1 B2", "23 Dokki St"},     // offset = 28
-//            {"3", "C111 C2", "2 Dokki St"},    // offset = 50
-//            {"4", "D31 D2", "2566 Dokki St"},  // offset = 73
-//            {"5", "E5551 E2", "24446 Dokki St"},
-//            {"6", "G", "2"}// offset = 98
-//    };
-//    file.close();
-//    Add(data[0]);
-//    Add(data[1]);
-//    Add(data[2]);
-//    Add(data[3]);
-//    Add(data[4]);
-//    Add(data[5]);
-//    readAuthors();
-//    updatePI("authors.txt", "authorsPI.txt");
-//    updatePI("books.txt", "booksPI.txt");
-//    updateBooksSI();
-//    updateAuthorsSI();
-//    string id;
-//    getline(cin, id);
-//    searchSI(id, "authorSI.txt", "authors.txt", "authorsPI.txt");
-//    searchSI(id,"booksSI.txt","books.txt","booksPI.txt");
-//    searchPI(id,"authorsPI.txt","authors.txt");
-//    searchPI("67","booksPI.txt","books.txt");
 
     while (true) {
         cout << "Welcome to the Library Catalog System\n";
@@ -141,10 +114,11 @@ int main() {
                 break;
             }
             case 9: {
-
+                writeQuery();
                 break;
             }
             case 10: {
+
                 return 0;
             }
             default: {
