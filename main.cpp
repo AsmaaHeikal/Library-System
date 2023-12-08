@@ -1,4 +1,8 @@
-#include<bits/stdc++.h>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
+#include <vector>
 
 using namespace std;
 
@@ -422,6 +426,7 @@ pair<bool, pair<string, string>> binarySearch(const vector<pair<string, string>>
         if (stoi(index[mid].first) == ID) {
             result.first = true;
             result.second = index[mid];
+            break;
         } else if (stoi(index[mid].first) < ID) {
             low = mid + 1;
         } else {
@@ -443,6 +448,7 @@ pair<bool, pair<string, string> > binarySearch(const vector<pair<string, string>
         if (stoi(index[mid].first) == id) {
             result.first = true;
             result.second = index[mid];
+            break;
         } else if (stoi(index[mid].first) < id) {
             low = mid + 1;
         } else {
