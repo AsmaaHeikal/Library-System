@@ -472,21 +472,13 @@ int searchPI(string id, const string &file, const string &file2) {
     indexFile.seekg(0, ios::beg);
     vector<pair<string, string> > indx;
     pair<string, string> entry;
-    while (!indexFile.eof()) {
-
-        getline(indexFile, entry.first, '|');
-        getline(indexFile, entry.second);
+    while (getline(indexFile, entry.first, '|')&& getline(indexFile, entry.second)) {
         indx.push_back(entry);
-        cout <<entry.first <<"entry1"<<endl;
-        cout <<entry.second <<"entry2"<<endl;
     }
-    cout<<"Binary seach in search pi"<<endl;
     auto x = binarySearch(indx, stoi(id) );
+    cout << "x";
     if (x.first) {
-        cout <<"Here" << x.second.second;
         int bitoffset = stoi(x.second.second);
-        cout <<"Her2" << x.second.second;
-        //search(bitoffset, file2);
         return bitoffset;
     } else return -1;
 
@@ -494,6 +486,7 @@ int searchPI(string id, const string &file, const string &file2) {
     File.close();
 
 }
+
 
 vector<int> searchSI(string id, const string &SIfile, const string &file, const string &PIfile, const string &LL) {
     fstream SIFile(SIfile);
