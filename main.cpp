@@ -48,7 +48,8 @@ void updateAuthorName();
 void updateBookTitle();
 
 void writeQuery();
-
+void printAuthor();
+void printBook();
 short cntID = 0, CntNameLL = 0, CntNameSec = 0;
 
 int main() {
@@ -106,11 +107,11 @@ int main() {
                 break;
             }
             case 7: {
-
+                void printAuthor();
                 break;
             }
             case 8: {
-
+                void printBook();
                 break;
             }
             case 9: {
@@ -1271,3 +1272,5 @@ void Add(string type){
         }
     }
 }
+void printAuthor();
+void printBook();
