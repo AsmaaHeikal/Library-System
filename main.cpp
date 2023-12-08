@@ -679,8 +679,8 @@ bool deleteAuthorSI(string id, string secondaryKey , string fileSI, string fileL
 
         if (secondaryIndex[i].first == secondaryKey) { // extract offset
             offset = stoi(secondaryIndex[i].second);
-            cout << "Offset: " << offset << endl; // TODO remove
-            cout << "Found!" << endl; // TODO remove
+//            cout << "Offset: " << offset << endl; // TODO remove
+//            cout << "Found!" << endl; // TODO remove
             break;
         }
     }
@@ -777,7 +777,7 @@ void deleteRecord(char id[], string originalFile, string filePI, string fileSI, 
 
     // call search function to return the offset of that record if exists
     short offset = searchPI(id, filePI, originalFile); // add here search call instead
-    cout << "from delete "<<offset <<endl;  // TODO remove
+//    cout << "from delete "<<offset <<endl;  // TODO remove
     if (offset == -1) {
         cout << "Deletion failed -> id not found\n";
         file.close();
@@ -788,9 +788,7 @@ void deleteRecord(char id[], string originalFile, string filePI, string fileSI, 
     file.seekg(offset, ios::beg);
     if (type == "Author"){
         getline(file, field1, '|'); // id
-        cout << "\nid: " << field1 << "\n";
         getline(file, field2, '|'); // name
-        cout << "\nname: " << field2 << "\n";
         target = field2;
     } else if (type == "Book"){
         getline(file, field1, '|' ); // isbn
