@@ -34,7 +34,7 @@ string search(int bitOffset, const string &file);
 
 int searchPI(string id, const string &file, const string &file2);
 
-int searchSI(string id, const string &SIfile, const string &file, const string &PIfile);
+vector<int> searchSI(string id, const string &SIfile, const string &file, const string &PIfile, const string &LL);
 
 bool deleteRecordPI(string id, string filePI);
 
@@ -489,19 +489,20 @@ int searchPI(string id, const string &file, const string &file2) {
 
 }
 
-int searchSI(string id, const string &SIfile, const string &file, const string &PIfile) {
-    ifstream SIFile(SIfile);
-    ifstream PIFile(PIfile);
-    ifstream File(file);
+vector<int> searchSI(string id, const string &SIfile, const string &file, const string &PIfile, const string &LL) {
+    fstream SIFile(SIfile);
+    fstream PIFile(PIfile);
+    fstream File(file);
+    fstream LLFile(LL);
 
     //check that datafile is full
-    if (!SIFile.is_open()) {
+    if (!SIFile.is_open() || !PIFile.is_open() || !LLFile.is_open() || !File.is_open()) {
         cerr << "Error opening files." << endl;
-        return 0;
+
     }
 
     SIFile.seekg(0, ios::beg);
-    vector<pair<string, string>> indx;
+    vector<pair<string, string> > indx;
     pair<string, string> entry;
     while (!SIFile.eof()) {
 
@@ -510,21 +511,24 @@ int searchSI(string id, const string &SIfile, const string &file, const string &
         indx.push_back(entry);
         SIFile.ignore();  // Ignore the newline character
     }
-    if (binarySearch(indx, id).first) {
-        istringstream values ;
-        values.str(binarySearch(indx,id).second.second);
-        values.seekg(0,ios::beg);
-        string val ;
+    auto x = binarySearch(indx, id);
 
-        while(!values.eof()){
-
-            getline(values,val,',');
-            searchPI(val,PIfile,file) ;
+    vector<int> result;
+    string key, value;
+    if (x.first) {
+        int offset = stoi(x.second.second);
+        while (offset != -1) {
+            LLFile.seekg(offset, ios::beg);
+            getline(LLFile, key, '|');
+            getline(LLFile, value, ' ');
+            result.push_back(searchPI(key, PIfile, file));
+            offset = (stoi(value));
 
         }
 
-    } else cout << "not found";
 
+    }
+    return result;
 
     PIFile.close();
     SIFile.close();
