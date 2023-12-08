@@ -50,17 +50,25 @@ void updateBookTitle();
 void writeQuery();
 void printAuthor();
 void printBook();
-short cntID = 0, CntNameLL = 0, CntNameSec = 0;
 
 int main() {
     fstream author("authors.txt", ios::in|ios::out|ios::binary);
-    author.seekg(0, ios::beg);
+    author.seekg(0, ios::end);
+    int isEmpty = author.tellg();
     short head=-1;
-    author.write((char*)&head, sizeof(head));
+    if (isEmpty==0)
+    {
+        author.seekg(0, ios::beg);
+        author.write((char*)&head, sizeof(head));
+    }
     author.close();
     fstream book("books.txt", ios::in|ios::out|ios::binary);
-    book.seekg(0, ios::beg);
-    book.write((char*)&head, sizeof(head));
+    book.seekg(0, ios::end);
+    isEmpty = book.tellg();
+    if(isEmpty==0){
+        book.seekg(0, ios::beg);
+        book.write((char*)&head, sizeof(head));
+    }
     book.close();
 
     while (true) {
@@ -107,11 +115,11 @@ int main() {
                 break;
             }
             case 7: {
-                void printAuthor();
+                printAuthor();
                 break;
             }
             case 8: {
-                void printBook();
+                printBook();
                 break;
             }
             case 9: {
