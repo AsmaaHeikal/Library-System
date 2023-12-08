@@ -1,7 +1,6 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <sstream>
 #include <vector>
 
 using namespace std;
@@ -48,20 +47,22 @@ void deleteRecord(char id[], string originalFile, string filePI, string fileSI, 
 
 void deleteHandler(string recordType);
 
-
 void updateAuthorName();
 
 void updateBookTitle();
 
 void writeQuery();
 
+
 short cntID = 0, CntNameLL = 0, CntNameSec = 0;
 
 int main() {
     fstream file("authors.txt", ios::in|ios::out|ios::binary);
-    file.seekg(0, ios::beg);
-    short head=-1;
-    file.write((char*)&head, sizeof(head));
+// TODO : fix it to write header only => the first time created
+        file.seekg(0, ios::beg);
+        short head=-1;
+        file.write((char*)&head, sizeof(head));
+
     Author data[] = {
             {"1", "AA1 A2", "222 Dokki St"},   // offset = 4
             {"2", "B1 B2", "23 Dokki St"},     // offset = 28
@@ -129,7 +130,7 @@ int main() {
             }
             case 6: {
                 deleteHandler("Author");
-
+                readAuthors();
                 break;
             }
             case 7: {
@@ -211,8 +212,6 @@ void updatePI(const string &file, const string &index) {
     dataFile.close();
     indexFile.close();
 }
-
-
 
 void updatePI2(const string &file, const string &index) {
 
@@ -477,7 +476,6 @@ int searchPI(string id, const string &file, const string &file2) {
         indx.push_back(entry);
     }
     auto x = binarySearch(indx, stoi(id) );
-    cout << "x";
     if (x.first) {
         int bitoffset = stoi(x.second.second);
         return bitoffset;
