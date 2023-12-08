@@ -773,7 +773,7 @@ void deleteRecord(char id[], string originalFile, string filePI, string fileSI, 
         cout << "Deletion failed -> fail to open file\n";
         return;
     }
-    cout << "hello";
+
 
     // call search function to return the offset of that record if exists
     short offset = searchPI(id, filePI, originalFile); // add here search call instead
@@ -788,7 +788,9 @@ void deleteRecord(char id[], string originalFile, string filePI, string fileSI, 
     file.seekg(offset, ios::beg);
     if (type == "Author"){
         getline(file, field1, '|'); // id
+        cout << "\nid: " << field1 << "\n";
         getline(file, field2, '|'); // name
+        cout << "\nname: " << field2 << "\n";
         target = field2;
     } else if (type == "Book"){
         getline(file, field1, '|' ); // isbn
@@ -899,7 +901,7 @@ void deleteHandler(string recordType){
     string message=(recordType=="Author")?"ID":"ISBN";
     string originalFile = (recordType=="Author")?"authors.txt":"books.txt";
     string filePI = (recordType=="Author")?"authorsPI.txt":"booksPI.txt";
-    string fileSI = (recordType=="Author")?"authorsPI.txt":"booksPI.txt";
+    string fileSI = (recordType=="Author")?"authorsSI.txt":"booksSI.txt";
     string fileLL = (recordType=="Author")?"nameLL.txt":"idLL.txt"; // TODO check team about the name of file
 
     cout << "Enter "<< message << ":";
@@ -908,6 +910,7 @@ void deleteHandler(string recordType){
     deleteRecord(id, originalFile, filePI, fileSI, fileLL, recordType);
 
 }
+
 void updateAuthorName() {
 
     ifstream dataFile("authors.txt");
