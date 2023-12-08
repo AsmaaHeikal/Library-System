@@ -1280,5 +1280,71 @@ void Add(string type){
         }
     }
 }
-void printAuthor();
-void printBook();
+void printAuthor(){
+    string id;
+    cout<<"Enter the author ID: ";
+    cin>>id;
+    int offset=searchPI(id,"authorsPI.txt","authors.txt");
+    if(offset==-1){
+        cout<<"This ID is not in the file"<<endl;
+        return;
+    }
+    fstream out("authors.txt",ios::in|ios::out|ios::binary);
+    out.seekg(offset,ios::beg);
+    short size;
+    out.read((char*)&size,sizeof(size));
+    char *record=new char[size];
+    out.read(record,size);
+    cout<<"ID: "<<id<<endl;
+    //split the string to get the author name and the address
+    string s;
+    string x;
+    int i=0;
+    while(record[i]!='|'){
+        s+=record[i];
+        i++;
+    }
+    i++;
+    while(record[i]!='|'){
+        x+=record[i];
+        i++;
+    }
+    cout<<"Author name: "<<s<<endl;
+    cout<<"Address: "<<x<<endl;
+    out.close();
+}
+void printBook(){
+    string isbn;
+    cout<<"Enter the ISBN: ";
+    cin>>isbn;
+    int offset=searchPI(isbn,"booksPI.txt","books.txt");
+    cout<<offset<<endl;
+    if(offset==-1){
+        cout<<"This ISBN is not in the file"<<endl;
+        return;
+    }
+    fstream out("books.txt",ios::in|ios::out|ios::binary);
+    out.seekg(offset-2,ios::beg);
+    short size;
+    out.read((char*)&size,sizeof(size));
+    cout<<size<<endl;
+    char *record=new char[size];
+    out.read(record,size);
+    cout<<"ISBN: "<<isbn<<endl;
+    //split the string to get the book title and the author id
+    string s;
+    string x;
+    int i=0;
+    while(record[i]!='|'){
+        s+=record[i];
+        i++;
+    }
+    i++;
+    while(record[i]!='|'){
+        x+=record[i];
+        i++;
+    }
+    cout<<"Book title: "<<s<<endl;
+    cout<<"Author ID: "<<x<<endl;
+    out.close();
+}
