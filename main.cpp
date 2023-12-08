@@ -1167,9 +1167,10 @@ void Add(string type){
         cout << "Enter the author ID: ";
         cin >> author.authorID;
         cout << "Enter the author name: ";
-        cin >> author.authorName;
+        cin.ignore();
+        cin.getline(author.authorName, 30);
         cout << "Enter the author address: ";
-        cin >> author.address;
+        cin.getline(author.address, 30);
         if(searchPI(author.authorID,PIFile,OriginalFile)!=-1){
             cout<<"This ID is already in the file"<<endl;
             return;
@@ -1180,9 +1181,10 @@ void Add(string type){
         cout << "Enter the ISBN: ";
         cin >> author.authorID;
         cout << "Enter the book title: ";
-        cin >> author.authorName;
+        cin.ignore();
+        cin.getline(author.authorName, 30);
         cout << "Enter the author ID: ";
-        cin >> author.address;
+        cin.getline(author.address, 15);
         if(searchPI(author.authorID,PIFile,OriginalFile)!=-1){
             cout<<"This ID is already in the file"<<endl;
             return;
