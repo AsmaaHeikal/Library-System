@@ -28,7 +28,7 @@ void updateAuthorsSI();
 
 void readAuthors();
 
-void Add(Author author);
+void Add(string type);
 
 pair<bool, pair<string, string> > binarySearch(const vector<pair<string, string> > &index, const int &id);
 
@@ -58,26 +58,31 @@ void writeQuery();
 short cntID = 0, CntNameLL = 0, CntNameSec = 0;
 
 int main() {
-    fstream file("authors.txt", ios::in|ios::out|ios::binary);
-    file.seekg(0, ios::beg);
+    fstream author("authors.txt", ios::in|ios::out|ios::binary);
+    author.seekg(0, ios::beg);
     short head=-1;
-    file.write((char*)&head, sizeof(head));
-    Author data[] = {
-            {"1", "AA1 A2", "222 Dokki St"},   // offset = 4
-            {"2", "B1 B2", "23 Dokki St"},     // offset = 28
-            {"3", "C111 C2", "2 Dokki St"},    // offset = 50
-            {"4", "D31 D2", "2566 Dokki St"},  // offset = 73
-            {"5", "E5551 E2", "24446 Dokki St"},
-            {"6", "G", "2"}// offset = 98
-    };
-    file.close();
-    Add(data[0]);
-    Add(data[1]);
-    Add(data[2]);
-    Add(data[3]);
-    Add(data[4]);
-    Add(data[5]);
-    readAuthors();
+    author.write((char*)&head, sizeof(head));
+    author.close();
+    fstream book("books.txt", ios::in|ios::out|ios::binary);
+    book.seekg(0, ios::beg);
+    book.write((char*)&head, sizeof(head));
+    book.close();
+//    Author data[] = {
+//            {"1", "AA1 A2", "222 Dokki St"},   // offset = 4
+//            {"2", "B1 B2", "23 Dokki St"},     // offset = 28
+//            {"3", "C111 C2", "2 Dokki St"},    // offset = 50
+//            {"4", "D31 D2", "2566 Dokki St"},  // offset = 73
+//            {"5", "E5551 E2", "24446 Dokki St"},
+//            {"6", "G", "2"}// offset = 98
+//    };
+//    file.close();
+//    Add(data[0]);
+//    Add(data[1]);
+//    Add(data[2]);
+//    Add(data[3]);
+//    Add(data[4]);
+//    Add(data[5]);
+//    readAuthors();
 //    updatePI("authors.txt", "authorsPI.txt");
 //    updatePI("books.txt", "booksPI.txt");
 //    updateBooksSI();
@@ -108,11 +113,11 @@ int main() {
 
         switch (choice) {
             case 1: {
-
+                Add("Author");
                 break;
             }
             case 2: {
-
+                Add("Book");
                 break;
             }
             case 3: {
@@ -1024,9 +1029,9 @@ void writeQuery(){
 
 }
 
-void insertAuthorInPrimary(const char id[],short offset){
+void insertInPrimary(const char id[],short offset, string filePI){
 
-    fstream authorsPI("authorsPI.txt",ios::in|ios::out);
+    fstream authorsPI(filePI,ios::in|ios::out);
     vector<pair<string,string>> v;
     string s;
     string x;
@@ -1036,7 +1041,7 @@ void insertAuthorInPrimary(const char id[],short offset){
     v.push_back(make_pair(id,to_string(offset)));
     sort(v.begin(),v.end());
     authorsPI.close();
-    authorsPI.open("authorsPI.txt",ios::in|ios::out|ios::trunc);
+    authorsPI.open(filePI,ios::in|ios::out|ios::trunc);
     for(int i=0;i<v.size();i++){
         authorsPI<<v[i].first<<'|'<<v[i].second;
         if(i<v.size()-1){
@@ -1045,11 +1050,11 @@ void insertAuthorInPrimary(const char id[],short offset){
     }
     authorsPI.close();
 }
-void insertName(char name[],char id[]){
+void insertName(char name[],char id[],string fileSI,string fileLL){
     //first check if the name is already in the secondary index
     //if it is then add the id to the file nameLL.txt and make the id with the same name refers to the offset of this id
     //
-    fstream authorSI("authorsSI.txt",ios::in|ios::out);
+    fstream authorSI(fileSI,ios::in|ios::out);
     //check if this name is in the file
     string s1;
     string x1;
@@ -1069,7 +1074,7 @@ void insertName(char name[],char id[]){
         if(strcmp(s.c_str(),name)==0) {
             found = true;
             //add the id to the file nameLL.txt and make the id with the same name refers to the offset of this id
-            fstream nameLL("nameLL.txt", ios::in | ios::out);
+            fstream nameLL(fileLL, ios::in | ios::out);
             //i want to add the id to the end of the file and make the offset of this id -1 and make the offset of the previous id with the same name refers to the offset of this id
             nameLL.seekg(0, ios::end);
             short offset = nameLL.tellp();
@@ -1116,9 +1121,9 @@ void insertName(char name[],char id[]){
     if(!found) {
         //if the name is not in the file then add it to the file and add the id to the file nameLL.txt and make the id with the same name refers to the offset of this id
         authorSI.close();
-        authorSI.open("authorsSI.txt", ios::in | ios::out);
+        authorSI.open(fileSI, ios::in | ios::out);
         //get the offset of the last record in the nameLL file
-        fstream nameLL("nameLL.txt", ios::in | ios::out);
+        fstream nameLL(fileLL, ios::in | ios::out);
         nameLL.seekg(0, ios::end);
         short offset = nameLL.tellp();
         nameLL.write(id, strlen(id));
@@ -1135,7 +1140,7 @@ void insertName(char name[],char id[]){
     //sort the vector
     sort(v.begin(),v.end());
     //write the vector to the file
-    authorSI.open("authorsSI.txt",ios::in|ios::out|ios::trunc);
+    authorSI.open(fileSI,ios::in|ios::out|ios::trunc);
     for(int i=0;i<v.size();i++){
         authorSI<<v[i].first<<'|'<<v[i].second;
         if(i<v.size()-1){
@@ -1144,10 +1149,52 @@ void insertName(char name[],char id[]){
     }
     authorSI.close();
 }
-
-void Add(Author author){
-    insertName(author.authorName,author.authorID);
-    fstream out("authors.txt",ios::in|ios::out|ios::binary);
+void Add(string type){
+    string OriginalFile;
+    string PIFile;
+    string SIFile;
+    string LLFile;
+    if(type=="Author"){
+        OriginalFile="authors.txt";
+        PIFile="authorsPI.txt";
+        SIFile="authorsSI.txt";
+        LLFile="nameLL.txt";
+    }
+    else if(type=="Book"){
+        OriginalFile="books.txt";
+        PIFile="booksPI.txt";
+        SIFile="booksSI.txt";
+        LLFile="idLL.txt";
+    }
+    //get the data from the user
+    Author author{};
+    if(type=="Author") {
+        cout << "Enter the author ID: ";
+        cin >> author.authorID;
+        cout << "Enter the author name: ";
+        cin >> author.authorName;
+        cout << "Enter the author address: ";
+        cin >> author.address;
+        if(searchPI(author.authorID,PIFile,OriginalFile)!=-1){
+            cout<<"This ID is already in the file"<<endl;
+            return;
+        }
+        insertName(author.authorName,author.authorID,SIFile,LLFile);
+    }
+    else{
+        cout << "Enter the ISBN: ";
+        cin >> author.authorID;
+        cout << "Enter the book title: ";
+        cin >> author.authorName;
+        cout << "Enter the author ID: ";
+        cin >> author.address;
+        if(searchPI(author.authorID,PIFile,OriginalFile)!=-1){
+            cout<<"This ID is already in the file"<<endl;
+            return;
+        }
+        insertName(author.address,author.authorID,SIFile,LLFile);
+    }
+    fstream out(OriginalFile,ios::in|ios::out|ios::binary);
     short RecordSize,IDSize,NameSize, AddressSize;
     short header;
     out.seekg(0,ios::beg);
@@ -1170,7 +1217,7 @@ void Add(Author author){
         out.write((char*)&author.address,AddressSize);
         out.write(&c,sizeof(c));
         out.close();
-        insertAuthorInPrimary(author.authorID,unique+2);
+        insertInPrimary(author.authorID,unique+2, PIFile);
     }
     else{
         short nextOf,deletedSize;
@@ -1192,7 +1239,7 @@ void Add(Author author){
             out.write((char*)&author.address,AddressSize);
             out.write(&c,sizeof(c));
             out.close();
-            insertAuthorInPrimary(author.authorID,unique+2);
+            insertInPrimary(author.authorID,unique+2, PIFile);
         }
         else if(DifferSize==0){
             unique=header;
@@ -1209,7 +1256,7 @@ void Add(Author author){
             out.seekp(0,ios::beg);
             out.write((char*)&nextOf,sizeof(nextOf));
             out.close();
-            insertAuthorInPrimary(author.authorID,unique);
+            insertInPrimary(author.authorID,unique, PIFile);
         }
         else{
 
@@ -1226,7 +1273,7 @@ void Add(Author author){
                 out.write((char*)&author.address,AddressSize);
                 out.write(&c,sizeof(c));
                 out.close();
-                insertAuthorInPrimary(author.authorID,unique+2);
+                insertInPrimary(author.authorID,unique+2, PIFile);
             }
             else{
                 out.seekp(0,ios::beg);
@@ -1251,8 +1298,8 @@ void Add(Author author){
                 out.write(c2,sizeof(c2));
                 out.write(&c,sizeof(c));
                 out.close();
-                deleteRecord("9","authors.txt", "authorsPI.txt", "authorsSI.txt", "nameLL.txt", "Author");
-                insertAuthorInPrimary(author.authorID,unique);
+                deleteRecord("9",OriginalFile, PIFile, SIFile, LLFile, type);
+                insertInPrimary(author.authorID,unique, PIFile);
             }
         }
     }
