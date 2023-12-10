@@ -13,9 +13,7 @@ struct Book {
     char authorID[15];
 };
 
-void updatePI(const string &file, const string &index);
-
-void updatePI2(const string &file, const string &index);
+void updatePI(const string &index, int ID, int shift);
 
 void updateBooksSI();
 
@@ -48,8 +46,8 @@ void updateAuthorName();
 void updateBookTitle();
 
 void writeQuery();
-void printAuthor();
-void printBook();
+void printAuthor(string id);
+void printBook(string isbn);
 
 int main() {
     fstream author("authors.txt", ios::in|ios::out|ios::binary);
@@ -115,11 +113,17 @@ int main() {
                 break;
             }
             case 7: {
-                printAuthor();
+                cout<<"Enter Author ID: ";
+                string id;
+                cin>>id;
+                printAuthor(id);
                 break;
             }
             case 8: {
-                printBook();
+                cout<<"Enter ISBN: ";
+                string isbn;
+                cin>>isbn;
+                printBook(isbn);
                 break;
             }
             case 9: {
@@ -139,119 +143,60 @@ int main() {
 }
 
 
-void updatePI(const string &file, const string &index) {
-
-    ifstream dataFile(file);
-    ofstream indexFile(index);
+void updatePI(const string &index, int ID, int shift) {
+    // read index
+    ifstream indexFileR(index);
 
     //check that datafile is full
-    if (!dataFile.is_open() || !indexFile.is_open()) {
-        cerr << "Error opening files." << endl;
+    if (!indexFileR.is_open()) {
+        cerr << "Error opening file to read." << endl;
         return;
     }
 
     //declaration
     vector<pair<int, int> > primaryIndex;
-    string id;
     pair<int, int> p;
-    short bitOffset = 2;
 
-    //set the cursor at the beginning of the file skipping first 2 char
-    dataFile.seekg(bitOffset, ios::beg);
+    while (!indexFileR.eof()) {
+        string pid;
+        getline(indexFileR, pid, '|');
+        p.first = stoi(pid);
 
-    //getting the length indicator of the record
-    short lengthIndicator;
-    dataFile.read((char*)&lengthIndicator, 2);
-    int recLen = lengthIndicator;
-    bitOffset += 2;
-
-    while (!dataFile.eof()) {
-
-        getline(dataFile, id, '|');
-
-        //adding the id and the bit offset of the record to the vector
-        p.first = stoi(id);
-        p.second = bitOffset;
+        string poffset;
+        getline(indexFileR, poffset);
+        p.second = stoi(poffset);
         primaryIndex.push_back(p);
-
-        //adding length of record to the bit offset
-        bitOffset += 2;
-        bitOffset += recLen;
-
-        //getting the length indicator of the next record
-        dataFile.seekg((recLen - id.length()-1), ios::cur);
-        dataFile.read((char*)&lengthIndicator, 2);
-        recLen = lengthIndicator;
-
     }
+    indexFileR.close();
+    // Shift values of affected PIs
+    bool flagAfterOffset = false;
+    for (pair<int, int> &curPair : primaryIndex){
+        if(!flagAfterOffset && curPair.first == ID){
+            flagAfterOffset = true;
+            continue;
+        }
+        if (flagAfterOffset) {
+            curPair.second += shift;
+        }
+    };
 
-    sort(primaryIndex.begin(), primaryIndex.end());
-    //filling the index file
-    for (const auto &entry: primaryIndex) {
-        indexFile << entry.first << '|' << entry.second << "\n";
-    }
+    ofstream indexFileW(index);
 
-    dataFile.close();
-    indexFile.close();
-}
-
-void updatePI2(const string &file, const string &index) {
-
-    ifstream dataFile(file);
-    ofstream indexFile(index);
-
-    //check that datafile is full
-    if (!dataFile.is_open() || !indexFile.is_open()) {
-        cerr << "Error opening files." << endl;
+    if (!indexFileW.is_open()) {
+        cerr << "Error opening file to write." << endl;
         return;
     }
 
-    //declaration
-    vector<pair<int, int> > primaryIndex;
-    string id;
-    pair<int, int> p;
-    int bitOffset = 2;
-
-    //set the cursor at the beginning of the file skipping first 2 char
-    dataFile.seekg(bitOffset, ios::beg);
-
-    //getting the length indicator of the record
-    short lengthIndicator;
-    dataFile.read((char*)&lengthIndicator, 2);
-    int recLen = lengthIndicator;
-    bitOffset += 2;
-
-    while (!dataFile.eof()) {
-
-        getline(dataFile, id, '|');
-
-
-        //adding the id and the bit offset of the record to the vector
-        p.first = stoi(id);
-        p.second = bitOffset;
-        primaryIndex.push_back(p);
-
-        //adding length of record to the bit offset
-        bitOffset += 2;
-        bitOffset += recLen;
-
-        //getting the length indicator of the next record
-        dataFile.seekg((recLen - id.length() - 1), ios::cur);
-        dataFile.read((char*)&lengthIndicator, 2);
-        recLen = lengthIndicator;
-
-    }
-
-    sort(primaryIndex.begin(), primaryIndex.end());
     //filling the index file
     for (int i = 0; i < primaryIndex.size(); i++) {
-        indexFile << primaryIndex[i].first << '|' << primaryIndex[i].second ;
-        if (i <primaryIndex.size() - 2) indexFile << "\n";
+        indexFileW << primaryIndex[i].first << '|' << primaryIndex[i].second << "\n" ;
+//        if (i <primaryIndex.size() - 2) indexFileW << "\n";
     }
 
-    dataFile.close();
-    indexFile.close();
+    indexFileW.close();
 }
+
+
 
 void updateBooksSI() {
 
@@ -494,26 +439,24 @@ vector<int> searchSI(string id, const string &SIfile, const string &file, const 
     auto x = binarySearch(indx, id);
 
     vector<int> result;
-    string key, value;
+    string key;
+    short value;
     if (x.first) {
         int offset = stoi(x.second.second);
         while (offset != -1) {
             LLFile.seekg(offset, ios::beg);
             getline(LLFile, key, '|');
-            getline(LLFile, value, ' ');
+            LLFile.read((char*)&value, 2);
             result.push_back(searchPI(key, PIfile, file));
-            offset = (stoi(value));
+            int v=value;
+            offset = (v);
 
         }
-
-
     }
     return result;
-
     PIFile.close();
     SIFile.close();
     File.close();
-
 }
 
 string search(int bitOffset, const string &file) {
@@ -911,8 +854,8 @@ void updateAuthorName() {
         string authorRecord = search(bitOffset, "authors.txt");
         cout << "Here's the current author record: " << authorRecord << endl;
         int firstPos = authorRecord.find('|');
-        int lastPos = authorRecord.rfind('|');
         int sizeRecord = authorRecord.length();
+        int lastPos = authorRecord.substr(0, sizeRecord-1).rfind('|');
 
         // Ask the user for the new author name
         string newAuthorName;
@@ -936,7 +879,7 @@ void updateAuthorName() {
         writeFile.close();
         cout << "Author name updated successfully!" << endl;
         // Update the index
-        updatePI("authors.txt", "authorsPI.txt");
+        updatePI("authorsPI.txt", stoi(authorID), newAuthorRecord.size() - authorRecord.size());
         updateAuthorsSI();
 
     }
@@ -962,10 +905,13 @@ void updateBookTitle() {
     if(bitOffset != -1){
         cout << "Book found!"<< endl;
         // Read the existing Book record
+        //ISBN|BookTitle|authorID|
         string bookRecord = search(bitOffset, "books.txt");
         cout << "Here's the current book record: " << bookRecord << endl;
         int firstPos = bookRecord.find('|');
-        int lastPos = bookRecord.rfind('|');
+
+        // I want the lastPos of a | exluding the last char in a record which is a |
+        int lastPos = bookRecord.substr(0, bookRecord.length() - 1).rfind('|');
         int sizeRecord = bookRecord.length();
 
         // Ask the user for the new book title
@@ -974,10 +920,18 @@ void updateBookTitle() {
         cin.ignore(); // Clear the newline character from the buffer
         getline(cin, newBookTitle);
 
+        // Get the first part of a record - "ISBN|"
         string recordPrefix = bookRecord.substr(0, firstPos + 1);
+        // Get the last part of a record "|authorID|"
         string recordSuffix = bookRecord.substr(lastPos);
+        // Concatenate first part and new title and lastPart
+        // ISBN|BookTitle|authorID|
         string newBookRecord = recordPrefix + newBookTitle + recordSuffix;
+        // Add the recordLengthIndicator to the record
+        // "recordLengthIndicatorISBN|BookTitle|authorID|"
         newBookRecord = to_string(newBookRecord.length()) + newBookRecord;
+
+        //Add the recordLengthIndicator to the new record
         string stringSize = to_string(sizeRecord);
         bookRecord = stringSize + bookRecord;
 
@@ -991,7 +945,7 @@ void updateBookTitle() {
         writeFile.close();
         cout << "Book title updated successfully!" << endl;
         // Update the index
-        updatePI("books.txt", "booksPI.txt");
+        updatePI("booksPI.txt", stoi(ISBN), newBookRecord.size() - bookRecord.size());
         updateBooksSI();
     }
     else{
@@ -1000,7 +954,82 @@ void updateBookTitle() {
 }
 
 void writeQuery(){
-
+    string query;
+    cout << "Enter your query: ";
+    cin.ignore();
+    getline(cin, query);
+    //this is the only three queries that we will handle
+    // Select all from Authors where Author ID=’xxx’; // this query will use primary index to get the results
+    // Select all from Books where Author ID=’xxx’; // this query will use secondary index to get the results.
+    // Select Author Name from Authors where Author ID=’xxx’; // this query will use secondary index to get the results.
+    if(query.find("Select all from Authors where Author ID=")!=string::npos){
+        string id=query.substr(41);
+        int offset=searchPI(id,"authorsPI.txt","authors.txt");
+        if(offset!=-1){
+            fstream authors("authors.txt",ios::in|ios::out);
+            authors.seekg(offset,ios::beg);
+            string record;
+            printAuthor(id);
+        }
+        else{
+            cout<<"Author ID not found"<<endl;
+        }
+    }
+    else if(query.find("Select all from Books where Author ID=")!=string::npos){
+        cout<<"here"<<endl;
+        string id=query.substr(39);
+        cout<<id<<endl;
+        vector<int> offsets=searchSI(id,"booksSI.txt","books.txt","booksPI.txt","idLL.txt");
+        istringstream record;
+        string bookID;
+        for(int i=0;i<offsets.size();i++){
+            record.str(search(offsets[i],"books.txt"));
+            getline(record,bookID,'|');
+            printBook(bookID);
+        }
+//        //loop on the original file and check if the author id is equal to the id in the query and print the record
+//        fstream books("books.txt",ios::in|ios::out);
+//        string record;
+//        //get the length indicator of the record
+//        //loop on the file and check if the author id is equal to the id in the query and print the record
+//        books.seekg(2,ios::beg);
+//        //get the length indicator of the record
+//        short lengthIndicator;
+//        books.read((char*)&lengthIndicator,2);
+//        int recLen=lengthIndicator;
+//        while(books.good()){
+//            //get the author id which is the last field in the record not the first
+//            books.read((char*)&record,lengthIndicator);
+//            string authorID=record.substr(recLen-1);
+//            cout<<authorID<<endl;
+//            if(authorID==id){
+//                printBook(id);
+//            }
+//            //get the length indicator of the next record
+//            books.read((char*)&lengthIndicator,2);
+//            recLen=lengthIndicator;
+//        }
+    }
+    else if(query.find("Select Author Name from Authors where Author ID=")!=string::npos){
+        string id=query.substr(49);
+        //get the offset of the id from the primary index
+        int offset=searchPI(id,"authorsPI.txt","authors.txt");
+        if(offset!=-1){
+            fstream authors("authors.txt",ios::in|ios::out);
+            authors.seekg(offset,ios::beg);
+            string record;
+            getline(authors,record,'|');
+            getline(authors,record,'|');
+            //get the name of the author
+            cout<<"Name: "<<record<<endl;
+        }
+        else{
+            cout<<"Author ID not found"<<endl;
+        }
+    }
+    else{
+        cout<<"Invalid query"<<endl;
+    }
 }
 
 void insertInPrimary(const char id[],short offset, string filePI){
@@ -1027,8 +1056,8 @@ void insertInPrimary(const char id[],short offset, string filePI){
 void insertName(char name[],char id[],string fileSI,string fileLL){
     //first check if the name is already in the secondary index
     //if it is then add the id to the file nameLL.txt and make the id with the same name refers to the offset of this id
-    //
     fstream authorSI(fileSI,ios::in|ios::out);
+    //add new line to the end of the file
     //check if this name is in the file
     string s1;
     string x1;
@@ -1040,11 +1069,8 @@ void insertName(char name[],char id[],string fileSI,string fileLL){
     string s;
     string x;
     bool found=false;
-    while(authorSI.good()){
-        getline(authorSI,s,'|');
-        authorSI>>x;
+    while(getline(authorSI,s,'|')&& getline(authorSI,x)){
         short off=stoi(x);
-        authorSI.ignore();
         if(strcmp(s.c_str(),name)==0) {
             found = true;
             //add the id to the file nameLL.txt and make the id with the same name refers to the offset of this id
@@ -1054,6 +1080,8 @@ void insertName(char name[],char id[],string fileSI,string fileLL){
             short offset = nameLL.tellp();
             if (off == -1) {
                 for (int i = 0; i < v.size(); i++) {
+//                    cout<<v[i].first<<' '<<name<<endl;
+//                    cout<<v[i].second<<endl;
                     if (v[i].first == name) {
                         v[i].second = to_string(off);
                         break;
@@ -1280,10 +1308,7 @@ void Add(string type){
         }
     }
 }
-void printAuthor(){
-    string id;
-    cout<<"Enter the author ID: ";
-    cin>>id;
+void printAuthor(string id){
     int offset=searchPI(id,"authorsPI.txt","authors.txt");
     if(offset==-1){
         cout<<"This ID is not in the file"<<endl;
@@ -1313,10 +1338,7 @@ void printAuthor(){
     cout<<"Address: "<<x<<endl;
     out.close();
 }
-void printBook(){
-    string isbn;
-    cout<<"Enter the ISBN: ";
-    cin>>isbn;
+void printBook(string isbn){
     int offset=searchPI(isbn,"booksPI.txt","books.txt");
     cout<<offset<<endl;
     if(offset==-1){
@@ -1334,7 +1356,7 @@ void printBook(){
     //split the string to get the book title and the author id
     string s;
     string x;
-    int i=0;
+    int i=isbn.length()+1;
     while(record[i]!='|'){
         s+=record[i];
         i++;
